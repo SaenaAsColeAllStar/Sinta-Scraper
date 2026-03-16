@@ -114,7 +114,7 @@ function loadData(page) {
     
     $('a[href*="export_excel"]').attr('href', '{$base_url}/export/export_excel.php?type=google_scholar&dosen_id=' + dosenId);
     
-    loadPagination('{$base_url}/ajax/pagination_gs.php', 'dataContainer', page, perPage, dosenId, { tahun: tahun });
+    loadPagination('{$base_url}/ajax/pagination_gs.php', 'dataContainer', page, perPage, dosenId, '&tahun=' + tahun);
 }
 
 $(document).ready(function() {
