@@ -70,24 +70,25 @@ $i10_index = $conn->query("SELECT COUNT(*) as cnt FROM publikasi_gs " . ($dosen_
     <div class="card-header-custom">
         <h5><i class="bi bi-journal-richtext me-2"></i>Publikasi Google Scholar</h5>
         <div class="d-flex gap-2 flex-wrap align-items-center">
+            <input type="text" id="searchKeyword" class="form-control form-control-sm" placeholder="Cari judul..." style="width:200px;" onkeyup="if(event.key === 'Enter') loadData(1)">
             <select id="filterDosen" class="form-select form-select-sm" style="width:200px;" onchange="loadData(1)">
                 <option value="0">Semua Dosen</option>
                 <?php while ($d = $dosen_list->fetch_assoc()): ?>
                 <option value="<?= $d['id'] ?>" <?= $dosen_id == $d['id'] ? 'selected' : '' ?>><?= htmlspecialchars($d['nama']) ?></option>
                 <?php endwhile; ?>
             </select>
-            <select id="filterTahun" class="form-select form-select-sm" style="width:120px;" onchange="loadData(1)">
-                <option value="">Semua Tahun</option>
-                <?php while ($y = $years->fetch_assoc()): ?>
-                <option value="<?= $y['tahun'] ?>"><?= $y['tahun'] ?></option>
-                <?php endwhile; ?>
-            </select>
+            <div class="d-flex align-items-center gap-1">
+                <input type="number" id="tahunMulai" class="form-control form-control-sm" placeholder="Tahun Mulai" style="width:110px;" min="1900" max="<?= date('Y') ?>">
+                <span>-</span>
+                <input type="number" id="tahunSelesai" class="form-control form-control-sm" placeholder="Tahun Selesai" style="width:110px;" min="1900" max="<?= date('Y') ?>">
+            </div>
             <select id="perPage" class="form-select form-select-sm" style="width:80px;" onchange="loadData(1)">
                 <option value="10">10</option>
                 <option value="20">20</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
             </select>
+            <button onclick="loadData(1)" class="btn btn-primary-custom btn-sm-custom"><i class="bi bi-search"></i> Cari</button>
             <a href="<?= $base_url ?>/export/export_excel.php?type=google_scholar&dosen_id=<?= $dosen_id ?>" class="btn btn-success-custom btn-sm-custom">
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export
             </a>
@@ -109,12 +110,14 @@ let currentPage = 1;
 function loadData(page) {
     currentPage = page;
     const dosenId = $('#filterDosen').val();
-    const tahun = $('#filterTahun').val();
+    const tahunMulai = $('#tahunMulai').val();
+    const tahunSelesai = $('#tahunSelesai').val();
     const perPage = $('#perPage').val();
+    const keyword = $('#searchKeyword').val();
     
     $('a[href*="export_excel"]').attr('href', '{$base_url}/export/export_excel.php?type=google_scholar&dosen_id=' + dosenId);
     
-    loadPagination('{$base_url}/ajax/pagination_gs.php', 'dataContainer', page, perPage, dosenId, '&tahun=' + tahun);
+    loadPagination('{$base_url}/ajax/pagination_gs.php', 'dataContainer', page, perPage, dosenId, { tahun_mulai: tahunMulai, tahun_selesai: tahunSelesai, keyword: keyword });
 }
 
 $(document).ready(function() {

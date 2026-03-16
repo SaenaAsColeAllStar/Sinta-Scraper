@@ -59,16 +59,24 @@ function showToast(message, type = 'success') {
 }
 
 // AJAX Pagination - generic loader
-function loadPagination(url, containerId, page, perPage, dosenId) {
+function loadPagination(url, containerId, page, perPage, dosenId, extraParams = {}) {
     showLoading();
+
+    // Combine base data with extraParams
+    let requestData = {
+        page: page,
+        per_page: perPage,
+        dosen_id: dosenId
+    };
+
+    if (typeof extraParams === 'object' && extraParams !== null) {
+        Object.assign(requestData, extraParams);
+    }
+
     $.ajax({
         url: url,
         type: 'GET',
-        data: {
-            page: page,
-            per_page: perPage,
-            dosen_id: dosenId
-        },
+        data: requestData,
         success: function(response) {
             $('#' + containerId).html(response);
             hideLoading();

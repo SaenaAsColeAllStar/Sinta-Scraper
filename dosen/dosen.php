@@ -46,6 +46,9 @@ $dosen_list = $conn->query("SELECT * FROM dosen $where ORDER BY nama ASC LIMIT $
                     <i class="bi bi-search"></i>
                 </button>
             </form>
+            <button class="btn btn-info-custom" onclick="scrapeAll()">
+                <i class="bi bi-arrow-repeat"></i> Scrape Semua
+            </button>
             <a href="<?= $base_url ?>/dosen/tambah_dosen.php" class="btn btn-success-custom">
                 <i class="bi bi-plus-lg"></i> Tambah Dosen
             </a>
@@ -174,4 +177,50 @@ $dosen_list = $conn->query("SELECT * FROM dosen $where ORDER BY nama ASC LIMIT $
     </div>
 </div>
 
-<?php require_once __DIR__ . '/../layout/footer.php'; ?>
+<?php
+// Collect all dosen IDs for scrapeAll feature
+$all_ids = [];
+$dosen_all = $conn->query("SELECT id FROM dosen");
+while ($row = $dosen_all->fetch_assoc()) {
+    $all_ids[] = $row['id'];
+}
+$all_ids_json = json_encode($all_ids);
+
+$extra_js = <<<JS
+<script>
+async function scrapeAll() {
+    const ids = $all_ids_json;
+    if (ids.length === 0) {
+        alert("Belum ada dosen untuk di-scrape.");
+        return;
+    }
+
+    if (!confirm("Proses ini akan menjalankan scraping (SINTA & Scholar) untuk " + ids.length + " dosen. Mungkin membutuhkan waktu lama. Lanjutkan?")) {
+        return;
+    }
+
+    showLoading();
+
+    let successCount = 0;
+    for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        try {
+            // Kita coba fetch scrape_sinta.php lalu scrape_scholar.php
+            // Catatan: Ini synchronous per user agar tidak membuat server overload atau diblokir target
+            await fetch('{$base_url}/scraping/scrape_sinta.php?id=' + id);
+            await fetch('{$base_url}/scraping/scrape_scholar.php?id=' + id);
+            successCount++;
+        } catch (error) {
+            console.error("Gagal scrape dosen id " + id, error);
+        }
+    }
+
+    hideLoading();
+    alert("Proses scrape selesai. Berhasil mensinkronisasi " + successCount + " dari " + ids.length + " dosen.");
+    window.location.reload();
+}
+</script>
+JS;
+
+require_once __DIR__ . '/../layout/footer.php';
+?>

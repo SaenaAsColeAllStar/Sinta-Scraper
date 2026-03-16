@@ -7,14 +7,26 @@ require_once __DIR__ . '/../config/koneksi.php';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $per_page = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
 $dosen_id = isset($_GET['dosen_id']) ? (int)$_GET['dosen_id'] : 0;
-$tahun = isset($_GET['tahun']) ? trim($_GET['tahun']) : '';
+$tahun_mulai = isset($_GET['tahun_mulai']) ? (int)$_GET['tahun_mulai'] : 0;
+$tahun_selesai = isset($_GET['tahun_selesai']) ? (int)$_GET['tahun_selesai'] : 0;
+$keyword = isset($_GET['keyword']) ? $conn->real_escape_string($_GET['keyword']) : '';
 
 if ($page < 1) $page = 1;
 if (!in_array($per_page, [10, 20, 50, 100])) $per_page = 10;
 
 $where = [];
 if ($dosen_id > 0) $where[] = "gs.dosen_id = $dosen_id";
-if (!empty($tahun)) $where[] = "gs.tahun = '" . $conn->real_escape_string($tahun) . "'";
+
+if ($tahun_mulai > 0 && $tahun_selesai > 0) {
+    $where[] = "gs.tahun BETWEEN $tahun_mulai AND $tahun_selesai";
+} elseif ($tahun_mulai > 0) {
+    $where[] = "gs.tahun >= $tahun_mulai";
+} elseif ($tahun_selesai > 0) {
+    $where[] = "gs.tahun <= $tahun_selesai";
+}
+
+if ($keyword !== '') $where[] = "gs.judul LIKE '%$keyword%'";
+
 $where_sql = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
 $total = $conn->query("SELECT COUNT(*) as total FROM publikasi_gs gs $where_sql")->fetch_assoc()['total'];

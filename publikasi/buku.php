@@ -13,6 +13,7 @@ $dosen_list = $conn->query("SELECT id, nama FROM dosen ORDER BY nama ASC");
     <div class="card-header-custom">
         <h5><i class="bi bi-book-fill me-2"></i>Data Buku</h5>
         <div class="d-flex gap-2 flex-wrap align-items-center">
+            <input type="text" id="searchKeyword" class="form-control form-control-sm" placeholder="Cari judul..." style="width:200px;" onkeyup="if(event.key === 'Enter') loadData(1)">
             <select id="filterDosen" class="form-select form-select-sm" style="width:200px;" onchange="loadData(1)">
                 <option value="0">Semua Dosen</option>
                 <?php while ($d = $dosen_list->fetch_assoc()): ?>
@@ -24,6 +25,7 @@ $dosen_list = $conn->query("SELECT id, nama FROM dosen ORDER BY nama ASC");
                 <option value="20">20</option>
                 <option value="50">50</option>
             </select>
+            <button onclick="loadData(1)" class="btn btn-primary-custom btn-sm-custom"><i class="bi bi-search"></i> Cari</button>
             <a href="<?= $base_url ?>/export/export_excel.php?type=buku&dosen_id=<?= $dosen_id ?>" class="btn btn-success-custom btn-sm-custom">
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export
             </a>
@@ -46,10 +48,11 @@ function loadData(page) {
     currentPage = page;
     const dosenId = $('#filterDosen').val();
     const perPage = $('#perPage').val();
+    const keyword = $('#searchKeyword').val();
     
     $('a[href*="export_excel"]').attr('href', '{$base_url}/export/export_excel.php?type=buku&dosen_id=' + dosenId);
     
-    loadPagination('{$base_url}/ajax/pagination_buku.php', 'dataContainer', page, perPage, dosenId);
+    loadPagination('{$base_url}/ajax/pagination_buku.php', 'dataContainer', page, perPage, dosenId, { keyword: keyword });
 }
 
 $(document).ready(function() {

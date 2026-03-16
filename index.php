@@ -5,13 +5,22 @@
 $page_title = 'Dashboard Analitik';
 require_once __DIR__ . '/layout/header.php';
 
+// Filter Prodi
+$prodi_filter = isset($_GET['prodi']) ? $conn->real_escape_string($_GET['prodi']) : '';
+$prodi_list = $conn->query("SELECT DISTINCT prodi FROM dosen WHERE prodi != '' ORDER BY prodi ASC");
+
+// Kondisi where
+$dosen_where = $prodi_filter ? "WHERE prodi = '$prodi_filter'" : "";
+$pub_where = $prodi_filter ? "WHERE dosen_id IN (SELECT id FROM dosen WHERE prodi = '$prodi_filter')" : "";
+$pub_where_and = $prodi_filter ? "AND dosen_id IN (SELECT id FROM dosen WHERE prodi = '$prodi_filter')" : "";
+
 // Statistik Utama
-$total_dosen  = $conn->query("SELECT COUNT(*) as total FROM dosen")->fetch_assoc()['total'];
-$total_gs     = $conn->query("SELECT COUNT(*) as total FROM publikasi_gs")->fetch_assoc()['total'];
-$total_scopus = $conn->query("SELECT COUNT(*) as total FROM publikasi_scopus")->fetch_assoc()['total'];
-$total_garuda = $conn->query("SELECT COUNT(*) as total FROM publikasi_garuda")->fetch_assoc()['total'];
-$total_hki    = $conn->query("SELECT COUNT(*) as total FROM hki")->fetch_assoc()['total'];
-$total_buku   = $conn->query("SELECT COUNT(*) as total FROM buku")->fetch_assoc()['total'];
+$total_dosen  = $conn->query("SELECT COUNT(*) as total FROM dosen $dosen_where")->fetch_assoc()['total'];
+$total_gs     = $conn->query("SELECT COUNT(*) as total FROM publikasi_gs $pub_where")->fetch_assoc()['total'];
+$total_scopus = $conn->query("SELECT COUNT(*) as total FROM publikasi_scopus $pub_where")->fetch_assoc()['total'];
+$total_garuda = $conn->query("SELECT COUNT(*) as total FROM publikasi_garuda $pub_where")->fetch_assoc()['total'];
+$total_hki    = $conn->query("SELECT COUNT(*) as total FROM hki $pub_where")->fetch_assoc()['total'];
+$total_buku   = $conn->query("SELECT COUNT(*) as total FROM buku $pub_where")->fetch_assoc()['total'];
 
 // Data untuk Grafik Distribusi Kategori (Pie Chart)
 $dist_labels = ['Google Scholar', 'Scopus', 'Garuda', 'HKI', 'Buku'];
@@ -32,15 +41,15 @@ for ($i = $current_year - 4; $i <= $current_year; $i++) {
 }
 
 // Fetch tren GS
-$res_gs = $conn->query("SELECT tahun, COUNT(*) as cnt FROM publikasi_gs WHERE tahun >= " . ($current_year - 4) . " GROUP BY tahun");
+$res_gs = $conn->query("SELECT tahun, COUNT(*) as cnt FROM publikasi_gs WHERE tahun >= " . ($current_year - 4) . " $pub_where_and GROUP BY tahun");
 while ($r = $res_gs->fetch_assoc()) { if (isset($trend_gs[$r['tahun']])) $trend_gs[$r['tahun']] = $r['cnt']; }
 
 // Fetch tren Scopus
-$res_scopus = $conn->query("SELECT tahun, COUNT(*) as cnt FROM publikasi_scopus WHERE tahun >= " . ($current_year - 4) . " GROUP BY tahun");
+$res_scopus = $conn->query("SELECT tahun, COUNT(*) as cnt FROM publikasi_scopus WHERE tahun >= " . ($current_year - 4) . " $pub_where_and GROUP BY tahun");
 while ($r = $res_scopus->fetch_assoc()) { if (isset($trend_scopus[$r['tahun']])) $trend_scopus[$r['tahun']] = $r['cnt']; }
 
 // Fetch tren Garuda
-$res_garuda = $conn->query("SELECT tahun, COUNT(*) as cnt FROM publikasi_garuda WHERE tahun >= " . ($current_year - 4) . " GROUP BY tahun");
+$res_garuda = $conn->query("SELECT tahun, COUNT(*) as cnt FROM publikasi_garuda WHERE tahun >= " . ($current_year - 4) . " $pub_where_and GROUP BY tahun");
 while ($r = $res_garuda->fetch_assoc()) { if (isset($trend_garuda[$r['tahun']])) $trend_garuda[$r['tahun']] = $r['cnt']; }
 
 $year_str        = "'" . implode("','", $trend_years) . "'";
@@ -56,13 +65,31 @@ $leaderboard = $conn->query("
            (SELECT COUNT(*) FROM publikasi_scopus WHERE dosen_id = d.id) + 
            (SELECT COUNT(*) FROM publikasi_garuda WHERE dosen_id = d.id) as total_publikasi
     FROM dosen d
+    $dosen_where
     ORDER BY total_sitasi DESC, h_index_gs DESC, total_publikasi DESC
     LIMIT 5
 ");
 
 // Dosen terbaru
-$recent_dosen = $conn->query("SELECT * FROM dosen ORDER BY created_at DESC LIMIT 5");
+$recent_dosen = $conn->query("SELECT * FROM dosen $dosen_where ORDER BY created_at DESC LIMIT 5");
 ?>
+
+<!-- Filter Data -->
+<div class="row mb-3">
+    <div class="col-12 d-flex justify-content-end">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <label for="prodi" class="form-label mb-0 fw-semibold text-muted">Filter Prodi:</label>
+            <select name="prodi" id="prodi" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                <option value="">Semua Prodi</option>
+                <?php while ($p = $prodi_list->fetch_assoc()): ?>
+                <option value="<?= htmlspecialchars($p['prodi']) ?>" <?= $prodi_filter == $p['prodi'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($p['prodi']) ?>
+                </option>
+                <?php endwhile; ?>
+            </select>
+        </form>
+    </div>
+</div>
 
 <!-- Stat Cards -->
 <div class="row g-3 mb-4">

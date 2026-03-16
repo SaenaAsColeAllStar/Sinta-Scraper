@@ -11,12 +11,19 @@ $dosen_id = isset($_GET['dosen_id']) ? (int)$_GET['dosen_id'] : 0;
 if ($page < 1) $page = 1;
 if (!in_array($per_page, [10, 20, 50])) $per_page = 10;
 
-$where = '';
+$keyword = isset($_GET['keyword']) ? $conn->real_escape_string($_GET['keyword']) : '';
+
+$where = [];
 if ($dosen_id > 0) {
-    $where = "WHERE s.dosen_id = $dosen_id";
+    $where[] = "s.dosen_id = $dosen_id";
+}
+if ($keyword !== '') {
+    $where[] = "s.judul LIKE '%$keyword%'";
 }
 
-$total = $conn->query("SELECT COUNT(*) as total FROM publikasi_scopus s $where")->fetch_assoc()['total'];
+$where_sql = count($where) > 0 ? "WHERE " . implode(" AND ", $where) : "";
+
+$total = $conn->query("SELECT COUNT(*) as total FROM publikasi_scopus s $where_sql")->fetch_assoc()['total'];
 $total_pages = ceil($total / $per_page);
 $offset = ($page - 1) * $per_page;
 
@@ -24,7 +31,7 @@ $data = $conn->query("
     SELECT s.*, d.nama as nama_dosen 
     FROM publikasi_scopus s 
     JOIN dosen d ON s.dosen_id = d.id 
-    $where
+    $where_sql
     ORDER BY s.sitasi DESC 
     LIMIT $per_page OFFSET $offset
 ");
