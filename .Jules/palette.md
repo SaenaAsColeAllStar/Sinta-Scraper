@@ -1,0 +1,3 @@
+## 2024-03-16 - Add ARIA Labels to Dosen Actions
+**Learning:** In standard PHP/HTML applications that heavily use icon-only actions (like edit, delete, and scrape buttons inside data tables), screen readers announce them poorly if `aria-label` or visually hidden text is missing. The tooltip attribute `title` is often not enough for all assistive technologies.
+**Action:** Always ensure that icon-only buttons, links, and pagination controls include explicit `aria-label`s describing the action. Also, use `aria-current="page"` for active pagination links and appropriate labels for pagination `nav` elements.

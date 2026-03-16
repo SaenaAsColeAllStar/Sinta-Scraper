@@ -32,7 +32,7 @@ $dosen_list = $conn->query("SELECT * FROM dosen $where ORDER BY nama ASC LIMIT $
 <div class="alert alert-<?= $msg_type == 'success' ? 'success' : 'danger' ?> alert-custom alert-dismissible fade show" role="alert">
     <i class="bi bi-<?= $msg_type == 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' ?>"></i>
     <?= htmlspecialchars($msg) ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup pesan peringatan"></button>
 </div>
 <?php endif; ?>
 
@@ -41,8 +41,8 @@ $dosen_list = $conn->query("SELECT * FROM dosen $where ORDER BY nama ASC LIMIT $
         <h5><i class="bi bi-people-fill me-2"></i>Daftar Dosen</h5>
         <div class="d-flex gap-2 flex-wrap">
             <form class="d-flex gap-2" method="GET">
-                <input type="text" name="search" class="form-control form-control-custom" placeholder="Cari nama/NIDN..." value="<?= htmlspecialchars($search) ?>" style="width: 200px;">
-                <button type="submit" class="btn btn-primary-custom btn-sm-custom">
+                <input type="text" name="search" class="form-control form-control-custom" placeholder="Cari nama/NIDN..." value="<?= htmlspecialchars($search) ?>" style="width: 200px;" aria-label="Cari nama atau NIDN">
+                <button type="submit" class="btn btn-primary-custom btn-sm-custom" aria-label="Cari">
                     <i class="bi bi-search"></i>
                 </button>
             </form>
@@ -114,16 +114,16 @@ $dosen_list = $conn->query("SELECT * FROM dosen $where ORDER BY nama ASC LIMIT $
                         </td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="<?= $base_url ?>/scraping/scrape_sinta.php?id=<?= $d['id'] ?>" class="btn btn-info-custom btn-sm-custom" data-bs-toggle="tooltip" title="Scrape SINTA">
+                                <a href="<?= $base_url ?>/scraping/scrape_sinta.php?id=<?= $d['id'] ?>" class="btn btn-info-custom btn-sm-custom" data-bs-toggle="tooltip" title="Scrape SINTA" aria-label="Scrape data SINTA untuk dosen ini">
                                     <i class="bi bi-arrow-repeat"></i>
                                 </a>
-                                <a href="<?= $base_url ?>/scraping/scrape_scholar.php?id=<?= $d['id'] ?>" class="btn btn-success-custom btn-sm-custom" data-bs-toggle="tooltip" title="Scrape Google Scholar">
+                                <a href="<?= $base_url ?>/scraping/scrape_scholar.php?id=<?= $d['id'] ?>" class="btn btn-success-custom btn-sm-custom" data-bs-toggle="tooltip" title="Scrape Google Scholar" aria-label="Scrape data Google Scholar untuk dosen ini">
                                     <i class="bi bi-google"></i>
                                 </a>
-                                <a href="<?= $base_url ?>/dosen/edit_dosen.php?id=<?= $d['id'] ?>" class="btn btn-warning-custom btn-sm-custom" data-bs-toggle="tooltip" title="Edit">
+                                <a href="<?= $base_url ?>/dosen/edit_dosen.php?id=<?= $d['id'] ?>" class="btn btn-warning-custom btn-sm-custom" data-bs-toggle="tooltip" title="Edit" aria-label="Edit data dosen ini">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <a href="<?= $base_url ?>/dosen/hapus_dosen.php?id=<?= $d['id'] ?>" class="btn btn-danger-custom btn-sm-custom" data-bs-toggle="tooltip" title="Hapus" onclick="return confirm('Yakin hapus dosen ini? Semua data publikasi akan ikut terhapus.')">
+                                <a href="<?= $base_url ?>/dosen/hapus_dosen.php?id=<?= $d['id'] ?>" class="btn btn-danger-custom btn-sm-custom" data-bs-toggle="tooltip" title="Hapus" aria-label="Hapus dosen ini" onclick="return confirm('Yakin hapus dosen ini? Semua data publikasi akan ikut terhapus.')">
                                     <i class="bi bi-trash3"></i>
                                 </a>
                             </div>
@@ -140,25 +140,25 @@ $dosen_list = $conn->query("SELECT * FROM dosen $where ORDER BY nama ASC LIMIT $
                 <div class="pagination-info">
                     Menampilkan <?= $offset + 1 ?>-<?= min($offset + $per_page, $total) ?> dari <?= $total ?> data
                 </div>
-                <select class="form-select form-select-sm" style="width: auto;" onchange="window.location.href='?per_page=' + this.value + '&search=<?= urlencode($search) ?>'">
+                <select class="form-select form-select-sm" style="width: auto;" aria-label="Pilih jumlah data per halaman" onchange="window.location.href='?per_page=' + this.value + '&search=<?= urlencode($search) ?>'">
                     <option value="10" <?= $per_page == 10 ? 'selected' : '' ?>>10</option>
                     <option value="20" <?= $per_page == 20 ? 'selected' : '' ?>>20</option>
                     <option value="50" <?= $per_page == 50 ? 'selected' : '' ?>>50</option>
                 </select>
             </div>
             <?php if ($total_pages > 1): ?>
-            <nav>
+            <nav aria-label="Navigasi halaman">
                 <ul class="pagination mb-0">
                     <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=<?= $page-1 ?>&per_page=<?= $per_page ?>&search=<?= urlencode($search) ?>"><i class="bi bi-chevron-left"></i></a>
+                        <a class="page-link" href="?page=<?= $page-1 ?>&per_page=<?= $per_page ?>&search=<?= urlencode($search) ?>" aria-label="Halaman sebelumnya"><i class="bi bi-chevron-left"></i></a>
                     </li>
                     <?php for ($i = max(1, $page-2); $i <= min($total_pages, $page+2); $i++): ?>
-                    <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                    <li class="page-item <?= $i == $page ? 'active' : '' ?>" <?= $i == $page ? 'aria-current="page"' : '' ?>>
                         <a class="page-link" href="?page=<?= $i ?>&per_page=<?= $per_page ?>&search=<?= urlencode($search) ?>"><?= $i ?></a>
                     </li>
                     <?php endfor; ?>
                     <li class="page-item <?= $page >= $total_pages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=<?= $page+1 ?>&per_page=<?= $per_page ?>&search=<?= urlencode($search) ?>"><i class="bi bi-chevron-right"></i></a>
+                        <a class="page-link" href="?page=<?= $page+1 ?>&per_page=<?= $per_page ?>&search=<?= urlencode($search) ?>" aria-label="Halaman selanjutnya"><i class="bi bi-chevron-right"></i></a>
                     </li>
                 </ul>
             </nav>
